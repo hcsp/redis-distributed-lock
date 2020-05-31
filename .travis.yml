@@ -1,0 +1,21 @@
+language: java
+cache:
+  directories:
+    - $HOME/.m2
+jdk:
+  - openjdk8
+script: echo "Running verification"
+jobs:
+  include:
+    - stage: Verify whitelist
+      install: skip
+      script: ./.circleci/verifyWhitelist.sh
+    - stage: Start Redis
+      install: skip
+      script: docker run -d -p 6379:6379 redis
+    - stage: Wait for Redis
+      install: skip
+      script: sleep 5
+    - stage: Run verification
+      install: skip
+      script: mvn clean verify
