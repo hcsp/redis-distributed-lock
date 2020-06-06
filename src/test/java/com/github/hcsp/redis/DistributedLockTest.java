@@ -19,7 +19,7 @@ class DistributedLockTest {
 
             ProcessBuilder pb =
                     new ProcessBuilder(
-                            javaPath, "-cp", classPath, "com.github.hcsp.redis.TestMain");
+                            javaPath, "-cp", classPath, "-DjvmName=jvm" + i, "com.github.hcsp.redis.TestMain");
             processes.add(pb.start());
         }
 
