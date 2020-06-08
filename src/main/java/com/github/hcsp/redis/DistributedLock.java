@@ -62,7 +62,6 @@ public class DistributedLock {
 
         @Override
         public void onMessage(String channel, String message) {
-            System.out.println(name + " get message is: " + message);
             unsubscribe();
         }
     }
