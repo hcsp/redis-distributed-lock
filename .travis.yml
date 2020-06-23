@@ -18,4 +18,4 @@ jobs:
       script: sleep 5
     - stage: Run verification
       install: skip
-      script: mvn clean verify
+      script: mvn clean verify -PmavenCentral
