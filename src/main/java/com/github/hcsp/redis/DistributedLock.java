@@ -57,7 +57,8 @@ public class DistributedLock {
             while (true) {
                 Long num = jedis.setnx(lock, jvmName);
                 if (num == 1) {
-                    System.out.println(lock + ":" + jvmName);
+                    // 3秒后key过期->释放锁
+                    jedis.expire(name, 3);
                     return;
                 }
                 Thread.sleep(100);
