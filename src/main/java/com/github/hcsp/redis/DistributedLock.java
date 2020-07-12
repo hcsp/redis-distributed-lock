@@ -24,7 +24,6 @@ public class DistributedLock {
      */
     public <T> T runUnderLock(Callable<T> callable) throws Exception {
         JedisPool pool = new JedisPool();
-        T result =null;
         try (Jedis jedis = pool.getResource()) {
             String timestamp = Long.toString(System.currentTimeMillis());
             long time = 0;
@@ -33,7 +32,7 @@ public class DistributedLock {
                 long setResult = jedis.setnx(name, timestamp);
                 if (setResult == 1) {
                     // 执行
-                    result = callable.call();
+                    T result = callable.call();
                     // 释放锁
                     jedis.del(name);
                     System.out.println("执行完毕...");
@@ -45,6 +44,6 @@ public class DistributedLock {
             }
         }
         System.out.println("获取锁失败超时...");
-        return result;
+        return null;
     }
 }
