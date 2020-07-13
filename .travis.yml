@@ -9,13 +9,8 @@ jobs:
   include:
     - stage: Verify whitelist
       install: skip
-      script: ./.circleci/verifyWhitelist.sh
-    - stage: Start Redis
-      install: skip
-      script: docker run -d -p 6379:6379 redis
-    - stage: Wait for Redis
-      install: skip
-      script: sleep 5
-    - stage: Run verification
-      install: skip
-      script: mvn clean verify -PmavenCentral
+      script:
+        - ./.circleci/verifyWhitelist.sh
+        - docker run -d -p 6379:6379 redis
+        - sleep 5
+        - mvn clean verify -PmavenCentral
