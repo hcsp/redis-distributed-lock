@@ -10,7 +10,7 @@ public class DistributedLockSubscriber {
     private void init() {
         final Thread thread = new Thread(() -> {
             final Jedis jedis = new Jedis();
-            jedis.subscribe(new DistributedLockPubSub(),"DistributedLock");
+            jedis.subscribe(new DistributedLockPubSub(), "DistributedLock");
         });
         thread.setDaemon(true);
         thread.start();

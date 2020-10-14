@@ -3,13 +3,13 @@ package com.github.hcsp.redis;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public interface DistributedLockQueue {
-    LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>(1);
+    LinkedBlockingQueue<String> QUEUE = new LinkedBlockingQueue<>(1);
 
     default void put(String ele) throws InterruptedException {
-        queue.put(ele);
+        QUEUE.put(ele);
     }
 
-    default String poll(){
-        return queue.poll();
+    default String poll() {
+        return QUEUE.poll();
     }
 }
