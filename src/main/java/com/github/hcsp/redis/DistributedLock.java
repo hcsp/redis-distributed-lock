@@ -3,7 +3,6 @@ package com.github.hcsp.redis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.Callable;
 
 public class DistributedLock {
@@ -48,7 +47,6 @@ public class DistributedLock {
         System.out.println("获取锁失败超时...");
         return null;
     }
-
 
 
 }
