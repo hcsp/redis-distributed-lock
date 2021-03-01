@@ -2,9 +2,11 @@ package com.github.hcsp.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPubSub;
 
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 
 public class DistributedLock {
     /**
@@ -53,33 +55,49 @@ public class DistributedLock {
      */
     void lock(Jedis jedis, String lock) {
 
-        try {
-            while (true) {
-                Long num = jedis.setnx(lock, jvmName);
-                if (num == 1) {
-                    // 3秒后key过期->释放锁
-                    jedis.expire(name, 1);
-                    return;
-                }
-                Thread.sleep(100);
+        while (true) {
+            Long num = jedis.setnx(lock, jvmName);
+            if (num == 1) {
+                // 1秒后key过期->释放锁
+                jedis.expire(name, 1);
+                return;
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            /**
+             * 这里需要引入之前所学的让线程不消耗资源，停在这里的方法
+             * 然后当满足条件，也就是收到指定订阅的消息后，让线程继续；
+             * 先计划使用countDonwLatch
+             */
+            CountDownLatch countDownLatch = new CountDownLatch(1);
+            initSubscribe(countDownLatch);
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    private void initSubscribe(CountDownLatch countDownLatch) {
+        final Thread thread = new Thread(() -> {
+            final Jedis jedis = new Jedis();
+            jedis.subscribe(new DistributedLockPubSub(countDownLatch), "DistributedLock");
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     void unlock(Jedis jedis, String lock) {
-        try {
-            while (true) {
-                String lockName = jedis.get(lock);
-                if (lockName.equals(jvmName)) {
-                    jedis.del("lock");
-                    return;
-                }
-                Thread.sleep(100);
+        while (true) {
+            String lockName = jedis.get(lock);
+            if (lockName.equals(jvmName)) {
+                jedis.del("lock");
+                /**
+                 * 释放锁时，发布消息
+                 */
+                jedis.publish("DistributedLock","unlock");
+                return;
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+//                Thread.sleep(100);
         }
     }
 }
