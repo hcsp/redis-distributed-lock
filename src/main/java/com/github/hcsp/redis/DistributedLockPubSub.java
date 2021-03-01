@@ -8,13 +8,13 @@ public class DistributedLockPubSub extends JedisPubSub {
 
     CountDownLatch countDownLatch;
 
-    public DistributedLockPubSub(CountDownLatch countDownLatch){
+    public DistributedLockPubSub(CountDownLatch countDownLatch) {
         this.countDownLatch = countDownLatch;
     }
 
     @Override
     public void onMessage(String channel, String message) {
-        if(channel.equals("DistributedLock") && message.equals("unlock")){
+        if (channel.equals("DistributedLock") && message.equals("unlock")) {
             countDownLatch.countDown();
         }
     }

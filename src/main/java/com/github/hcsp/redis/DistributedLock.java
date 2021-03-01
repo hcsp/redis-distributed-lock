@@ -94,7 +94,7 @@ public class DistributedLock {
                 /**
                  * 释放锁时，发布消息
                  */
-                jedis.publish("DistributedLock","unlock");
+                jedis.publish("DistributedLock", "unlock");
                 return;
             }
 //                Thread.sleep(100);
