@@ -50,6 +50,20 @@ public class DistributedLock {
      * 分布式锁，这里先向里面set if not exist;
      * 若是锁被别人拿了就一直循环，联系到乐观锁的概念；
      *
+     * 这里需要多补充两句，再复习的时候，卡壳了，首先是jedis的处理方法没有吃透；
+     * 在jedis.setnx的时候，是能拿到lock的就进入if里面，然后就return了
+     * 没拿到的就进入下面的countDownLatch方法，等待
+     * 之所以循环，是因为设计思路的问题；
+     * 结合看的blog,锁通常是有两种需求；
+     * ********************************
+     * 同样需要使用锁，动机可能完全相反：
+     * • 在保证线程安全的前提下，尽量让所有线程都执行成功
+     * • 在保证线程安全的前提下，只让一个线程执行成功
+     * *********************************
+     * 在本场景中的例子是第一种，是需要让所有线程都执行成功
+     * 在blog中的定时任务是第二种，同一时间只需要多节点中一个执行成功，避免重复执行；
+     * 在blog中定时锁，tryLock就没有用while循环；
+     *
      * @param jedis
      * @return
      */
@@ -57,9 +71,15 @@ public class DistributedLock {
 
         while (true) {
             Long num = jedis.setnx(lock, jvmName);
+            /**
+             * 如果该线程拿到了锁，就进入if方法
+             * 直接就return了，不执行后面的；
+             */
             if (num == 1) {
                 // 1秒后key过期->释放锁
                 jedis.expire(name, 1);
+                //下面这个应该更合理；
+                //jedis.expire(lock,1);
                 return;
             }
             /**
